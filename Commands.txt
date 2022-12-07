@@ -1,0 +1,98 @@
+mkdir atomicloops-backend-template
+cd atomicloops-backend-template
+virtualenv venv  
+source venv/bin/activate
+pip install django djangorestframework django-filter whitenoise django-extensions django-cors-headers
+django-admin startproject src .
+cd src  
+mkdir settings 
+mv settings.py settings/base.py    
+cd settings 
+touch prod.py dev.py __init__.py
+
+
+### Update Base.py
+add .parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+
+import os
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') 
+
+INSTALLED_APPS = [
+    "whitenoise.runserver_nostatic",
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    "rest_framework",
+    "corsheaders",
+    "django_filters",
+    "django_extensions",
+
+]
+
+MIDDLEWARE = [
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
+
+
+## dev
+from .base import *
+DEBUG = True
+
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'dev.sqlite3',
+    }
+}
+
+
+## prod
+
+from .base import *
+DEBUG = True
+
+ALLOWED_HOSTS = ["example.com"]
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'dev.sqlite3',
+    }
+}
+
+## ENV
+from .base import *
+# you need to set "myproject = 'prod'" as an environment variable
+# in your OS (on which your website is hosted)
+if os.environ['ENV'] == 'prod':
+   from .prod import *
+else:
+   from .dev import *
+
+## WSGI 
+ENV = os.getenv('ENV', None)
+if ENV is not None and ENV=="prod":
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'src.settings.settings.prod')
+else:
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'src.settings.settings.dev')
+
+cd ..
+cd ..
+python manage.py runserver
+
+
+pip install flake8
+
+
+dockerfile dev docker prod
+
+docker-compose dev docker-compose prod
+
+pip freeze > requirements.txt   

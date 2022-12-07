@@ -1,0 +1,52 @@
+version: '3.1'
+name: atomicloops-dev
+services:
+  backend-dev:
+    build: 
+      context: .
+      dockerfile: Dockerfile.dev
+    # container_name: backend-dev
+    user: "${UID}:${GID}"
+    environment:
+      ENV: dev
+    command: gunicorn --bind 0.0.0.0:8000 -w 2 src.wsgi --reload
+    # command: python manage.py runserver 0.0.0.0:8000 --settings=bmentor.settings.dev
+    volumes:
+      - .:/opt/:Z
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+  
+  db:
+    image: postgres:14
+    # container_name: postgres
+    restart: always
+    user: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - 5432:5432
+    expose:
+      - 5432
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  pgadmin:
+    # container_name: pgadmin4
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5050:80"
+    volumes:
+      - admin:/var/lib/pgadmin
+
+volumes:
+  db:
+  admin:
