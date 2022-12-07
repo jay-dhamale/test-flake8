@@ -1,0 +1,8 @@
+[flake8]
+ignore = F403
+exclude =
+    venv
+    migrations
+    __pycache__
+    manage.py
+    settings.py
